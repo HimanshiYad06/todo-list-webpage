@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List</title>
+  <style>
+    :root {
+      --font-color: #000;
+      --bg-color: #fdf6f0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--font-color);
+      margin: 0;
+      display: flex;
+      transition: background 0.3s, font-family 0.3s, color 0.3s;
+    }
+
+    aside {
+      width: 200px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-right: 1px solid #ccc;
+      min-height: 100vh;
+    }
+
+    main {
+      flex: 1;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section h3 {
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
+    .section button {
+      display: block;
+      margin: 6px 0;
+      padding: 8px 10px;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      background-color: #ececec;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .section button:hover {
+      background-color: #dcdcdc;
+    }
+
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .controls button {
+      padding: 10px 16px;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      background-color: #e0e0e0;
+      transition: background-color 0.3s;
+    }
+
+    .controls button:hover {
+      background-color: #d3d3d3;
+    }
+
+    #todoContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .todo-list {
+      width: 300px;
+      border: 1.5px dashed #aaa;
+      border-radius: 16px;
+      padding: 20px;
+      background-color: #ffffffcc;
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.05);
+      position: relative;
+      transition: transform 0.2s;
+    }
+
+    .todo-list:hover {
+      transform: scale(1.01);
+    }
+
+    .todo-list h3 {
+      margin-top: 0;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: none;
+      background: none;
+      color: #c00;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .task {
+      margin-bottom: 15px;
+    }
+
+    .completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .timestamp {
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 5px;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 60%;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="section">
+      <h3>Theme</h3>
+      <button onclick="cyclePastel()">Pastel</button>
+      <button onclick="cycleDark()">Dark</button>
+    </div>
+    <div class="section">
+      <h3>Font</h3>
+      <button onclick="changeFont('Arial')">Arial</button>
+      <button onclick="changeFont('Courier New')">Courier</button>
+      <button onclick="changeFont('Georgia')">Georgia</button>
+      <button onclick="changeFont('Verdana')">Verdana</button>
+      <button onclick="changeFont('Trebuchet MS')">Trebuchet</button>
+    </div>
+  </aside>
+
+  <main>
+    <h1>To-Do List</h1>
+    <div class="controls">
+      <button onclick="createNewList()">+ New To-Do List</button>
+    </div>
+    <div id="todoContainer"></div>
+  </main>
+
+  <script>
+    let listCounter = 0;
+
+    const pastelColors = ['#fdf6f0', '#fceae8', '#e8f8f5','#fff9db', '#e0f7fa', '#f5f0ff', '#F0F8FF', '#FFF5EE'];
+    const darkColors = ['#2c2c2c', '#1a1a1a', '#3a3a3a', '#2e2e38' ];
+
+    let pastelIndex = 0;
+    let darkIndex = 0;
+
+    function createNewList() {
+      listCounter++;
+      const container = document.getElementById('todoContainer');
+      const listDiv = document.createElement('div');
+      listDiv.className = 'todo-list';
+      listDiv.id = `list-${listCounter}`;
+
+      listDiv.innerHTML = `
+        <button class="delete-btn" onclick="deleteList('list-${listCounter}')">&times;</button>
+        <h3>List ${listCounter}</h3>
+        <input type="text" id="taskInput-${listCounter}" placeholder="New Task">
+        <button onclick="addTask(${listCounter})">Add</button>
+        <div id="tasks-${listCounter}"></div>
+      `;
+
+      container.appendChild(listDiv);
+    }
+
+    function deleteList(listId) {
+      const list = document.getElementById(listId);
+      list.remove();
+    }
+
+    function addTask(listId) {
+      const input = document.getElementById(`taskInput-${listId}`);
+      const taskText = input.value.trim();
+      if (taskText === '') return;
+
+      const tasksDiv = document.getElementById(`tasks-${listId}`);
+      const taskDiv = document.createElement('div');
+      taskDiv.className = 'task';
+      const timestamp = new Date().toLocaleString();
+
+      taskDiv.innerHTML = `
+        <input type="checkbox" onchange="toggleComplete(this)">
+        <span class="task-text">${taskText}</span>
+        <div class="timestamp">Added: ${timestamp}</div>
+      `;
+
+      tasksDiv.appendChild(taskDiv);
+      input.value = '';
+    }
+
+    function toggleComplete(checkbox) {
+      const taskDiv = checkbox.parentElement;
+      const taskText = taskDiv.querySelector('.task-text');
+      const timestampDiv = taskDiv.querySelector('.timestamp');
+
+      if (checkbox.checked) {
+        taskText.classList.add('completed');
+        const completedTime = new Date().toLocaleString();
+        timestampDiv.innerHTML += `<br>Completed: ${completedTime}`;
+      } else {
+        taskText.classList.remove('completed');
+        timestampDiv.innerHTML = timestampDiv.innerHTML.split('<br>')[0];
+      }
+    }
+
+    function cyclePastel() {
+      document.body.style.background = pastelColors[pastelIndex];
+      document.body.style.color = '#000';
+      pastelIndex = (pastelIndex + 1) % pastelColors.length;
+    }
+
+    function cycleDark() {
+      document.body.style.background = darkColors[darkIndex];
+      document.body.style.color = '#fff';
+      darkIndex = (darkIndex + 1) % darkColors.length;
+    }
+
+    function changeFont(font) {
+      document.body.style.fontFamily = font;
+    }
+
+    window.onload = createNewList;
+  </script>
+</body>
+</html>
